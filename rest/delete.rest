@@ -1,0 +1,6 @@
+POST   http://localhost:3008/api/phonenumbers
+Content-Type: application/json
+{
+    name:"Haran"
+    number:"739746827"
+}
