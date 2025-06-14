@@ -1,4 +1,8 @@
 const express=require('express')
+require('dotenv').config()
+
+const Person = require('./models/person')
+const mongoose = require('mongoose')
 const morgan = require('morgan')
 const cors =require('cors')
 const app = express()
@@ -26,10 +30,6 @@ let phonenumbers=[
     }
 ]
 
-
-
-
-
 app.use(express.json())
 morgan.token('body', (req) => {
   return req.method === 'POST' ? JSON.stringify(req.body) : '';
@@ -41,15 +41,16 @@ app.use(
 
 app.use(cors())
 app.get('/api/phonenumbers',(request,response)=>{
-    response.json(phonenumbers)
+    Person.find({}).then(persons=>response.json(persons))
 })
 
 app.use(express.static('dist'))
 
 app.get('/api/phonenumbers/:id',(request,response)=>{
-    const id=Number(request.params.id)
-    const person =phonenumbers.find(person=>person.id==id)
-    response.json(person)
+    Person.findById(request.params.id).then((person) => {
+        response.json(person)
+      })
+    
 })
 
 app.get('/info',(request,response)=>{
@@ -86,14 +87,14 @@ app.post('/api/phonenumbers', (request, response) => {
         });
     }
 
-    const newPerson = {
-        id: (Math.max(...phonenumbers.map(p => Number(p.id))) + 1).toString(),
+    const newPerson = new Person({
+        
         name: body.name,
         number: body.number
-    };
-
-    phonenumbers = phonenumbers.concat(newPerson);
-    response.json(newPerson);
+    })
+    newPerson.save().then((savedPerson) => {
+    response.json(savedPerson)
+  })
 });
 
 const PORT = process.env.PORT||3008
